@@ -9,3 +9,9 @@ dependencies = [
     "django>=6.0.3",
     "pydantic>=2.12.5",
 ]
+
+[dependency-groups]
+dev = [
+    "lint>=1.2.1",
+    "ruff>=0.15.9",
+]

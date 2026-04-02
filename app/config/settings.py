@@ -135,18 +135,18 @@ STATIC_URL = "static/"
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 LOGGING = {
-    'version': 1,
-    'disable_existing_loggers': False,
-    'handlers': {
-        'console': {
-            'level': 'DEBUG',
-            'class': 'logging.StreamHandler',
+    "version": 1,
+    "disable_existing_loggers": False,
+    "handlers": {
+        "console": {
+            "level": "DEBUG",
+            "class": "logging.StreamHandler",
         },
     },
-    'loggers': {
-        'django.db.backends': {
-            'handlers': ['console'],
-            'level': 'DEBUG',
+    "loggers": {
+        "django.db.backends": {
+            "handlers": ["console"],
+            "level": "DEBUG",
         },
     },
 }
@@ -164,8 +164,8 @@ DMR_SETTINGS = {
         ),
     ],
     Settings.openapi_config: OpenAPIConfig(
-        title='URL Shortifier',
-        version='0.0.1',
-        openapi_version='3.2.0',
+        title="URL Shortifier",
+        version="0.0.1",
+        openapi_version="3.2.0",
     ),
 }

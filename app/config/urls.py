@@ -10,7 +10,7 @@ schema = build_schema(links_router_v1)
 
 urlpatterns = [
     path("admin/", admin.site.urls),
-    path("api/v1/", include((links_router_v1.urls, 'links-app'), namespace='links')),
-    path('docs/openapi.json/', OpenAPIJsonView.as_view(schema), name='openapi'),
-    path('docs/swagger/', SwaggerView.as_view(schema), name='swagger'),
+    path("api/v1/", include((links_router_v1.urls, "links-app"), namespace="links")),
+    path("docs/openapi.json/", OpenAPIJsonView.as_view(schema), name="openapi"),
+    path("docs/swagger/", SwaggerView.as_view(schema), name="swagger"),
 ]

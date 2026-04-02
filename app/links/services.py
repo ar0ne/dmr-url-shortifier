@@ -16,13 +16,12 @@ CHARACTERS = string.ascii_letters + string.digits
 LATEST_SIZE = 10
 
 
-
 def shortify_url(_: str, size: int = 5) -> str:
     """
     Just create random string.
     Instead, we could hash original URL.
     """
-    return ''.join((secrets.choice(CHARACTERS) for _ in range(size)))
+    return "".join((secrets.choice(CHARACTERS) for _ in range(size)))
 
 
 def get_and_increment_url(key: str) -> ShortUrl:
@@ -30,7 +29,7 @@ def get_and_increment_url(key: str) -> ShortUrl:
     with transaction.atomic():
         url = ShortUrl.objects.select_for_update().get(key=key)
         url.hits = F("hits") + 1
-        url.save(update_fields=['hits'])
+        url.save(update_fields=["hits"])
         return url
 
 

@@ -41,7 +41,7 @@ class LinkModel(pydantic.BaseModel):
             key=obj.key,
             target_url=obj.target_url,
             hits=obj.hits,
-            created_at=obj.created_at
+            created_at=obj.created_at,
         )
 
 
@@ -63,7 +63,7 @@ class DetailLinkController(Controller[PydanticSerializer]):
 
     # TODO: 404 is not documented
     def get(self) -> LinkModel:
-        key = self.kwargs['key']
+        key = self.kwargs["key"]
         try:
             # 'hits' could be not "the latest", need to write Raw SQL to leverage RETURNING
             url = get_and_increment_url(key)
@@ -71,10 +71,9 @@ class DetailLinkController(Controller[PydanticSerializer]):
         except ShortUrl.DoesNotExist:
             raise APIError(
                 self.format_error(
-                    f"Unable to find link with {key=}",
-                    error_type=ErrorType.not_found
+                    f"Unable to find link with {key=}", error_type=ErrorType.not_found
                 ),
-                status_code=HTTPStatus.NOT_FOUND
+                status_code=HTTPStatus.NOT_FOUND,
             )
 
 
@@ -97,7 +96,7 @@ class LinkController(Controller[PydanticSerializer]):
                         key=shortify_url(parsed_body.target_url),
                         target_url=parsed_body.target_url,
                         created_by=get_user(self.request),
-                        hits=0
+                        hits=0,
                     )
                     return LinkModel.from_model(link)
                 except IntegrityError as err:
@@ -107,14 +106,16 @@ class LinkController(Controller[PydanticSerializer]):
 
     @override
     def handle_error(
-            self,
-            endpoint: Endpoint,
-            controller: Controller[PydanticSerializer],
-            exc: Exception,
+        self,
+        endpoint: Endpoint,
+        controller: Controller[PydanticSerializer],
+        exc: Exception,
     ) -> HttpResponse:
         if isinstance(exc, pydantic.ValidationError):
             return self.to_response(
-                self.format_error('Validation error: {}'.format(exc.errors()[0]['msg'])),
+                self.format_error(
+                    "Validation error: {}".format(exc.errors()[0]["msg"])
+                ),
                 status_code=HTTPStatus.BAD_REQUEST,
             )
         return super().handle_error(endpoint, controller, exc)

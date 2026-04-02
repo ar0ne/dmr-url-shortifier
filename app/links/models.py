@@ -12,11 +12,11 @@ class ShortUrl(models.Model):
     key = models.CharField(
         verbose_name=_("URL key"),
         help_text=_("Unique key for shortified URL"),
-        max_length=15, unique=True, db_index=True,
+        max_length=15,
+        unique=True,
+        db_index=True,
     )
-    target_url = models.URLField(
-        verbose_name=_("Target URL"), blank=False
-    )
+    target_url = models.URLField(verbose_name=_("Target URL"), blank=False)
     hits = models.PositiveIntegerField(
         verbose_name=_("Hits"),
         help_text=_("Total times the URL was requested"),
@@ -31,7 +31,4 @@ class ShortUrl(models.Model):
 
         ordering = ["-created_at"]
 
-        indexes = [
-            models.Index(fields=["created_at"]),
-            models.Index(fields=["key"])
-        ]
+        indexes = [models.Index(fields=["created_at"]), models.Index(fields=["key"])]
