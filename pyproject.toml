@@ -12,6 +12,5 @@ dependencies = [
 
 [dependency-groups]
 dev = [
-    "lint>=1.2.1",
     "ruff>=0.15.9",
 ]
