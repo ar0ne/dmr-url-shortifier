@@ -5,16 +5,16 @@ from dmr.plugins.pydantic import PydanticSerializer
 
 class ShortUrlModel(pydantic.BaseModel):
     name: str
-    url: str
+    target_url: str
 
 
 class ShortUrlCreateModel(pydantic.BaseModel):
-    url: str
+    target_url: str
 
 
 class LinkController(Controller[PydanticSerializer]):
     def get(self) -> ShortUrlModel:
-        return ShortUrlModel(name="foo", url="bar")
+        return ShortUrlModel(name="foo", target_url="bar")
 
     def post(self, parsed_body: Body[ShortUrlCreateModel]) -> ShortUrlModel:
         return ShortUrlModel()

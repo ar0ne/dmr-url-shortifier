@@ -9,8 +9,13 @@ class ShortUrl(models.Model):
         help_text=_("Unique name for shortified URL"),
         max_length=15, unique=True, db_index=True,
     )
-    url = models.URLField(
-        verbose_name=_("Original URL"), blank=False
+    target_url = models.URLField(
+        verbose_name=_("Target URL"), blank=False
+    )
+    hits = models.PositiveIntegerField(
+        verbose_name=_("Hits"),
+        help_text=_("Total times the URL was requested"),
+        null=False,
     )
     created_at = models.DateTimeField(auto_now_add=True)
     created_by = models.ForeignKey(get_user_model(), null=True, on_delete=DO_NOTHING)
