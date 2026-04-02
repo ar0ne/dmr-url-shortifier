@@ -1,13 +1,17 @@
 import logging
+from datetime import datetime
 from http import HTTPStatus
-from typing import Self
+from typing import override, Self
 
 import pydantic
 from django.db import transaction, IntegrityError
+from django.db.models import F
+from django.http import HttpResponse
 from dmr import Controller, Body, APIError, ResponseSpec
+from dmr.endpoint import Endpoint
 from dmr.errors import ErrorType
 from dmr.plugins.pydantic import PydanticSerializer
-from pydantic import Field
+from pydantic import Field, HttpUrl
 
 from .models import ShortUrl
 from .services import shortify
@@ -17,13 +21,17 @@ logger = logging.getLogger(__name__)
 
 class LinkModel(pydantic.BaseModel):
     name: str
-    target_url: str
+    target_url: HttpUrl
+    hits: int
+    created_at: datetime
 
     @classmethod
     def from_model(cls, obj: ShortUrl) -> Self:
         return cls(
             name=obj.name,
-            target_url=obj.target_url
+            target_url=obj.target_url,
+            hits=obj.hits,
+            created_at=obj.created_at
         )
 
 
@@ -48,7 +56,9 @@ class DetailLinkController(Controller[PydanticSerializer]):
         name = self.kwargs['name']
         with transaction.atomic():
             try:
-                url = ShortUrl.objects.get(name=name)
+                url = ShortUrl.objects.select_for_update().get(name=name)
+                url.hits = F("hits") + 1
+                url.save(update_fields=['hits'])
                 return LinkModel.from_model(url)
             except ShortUrl.DoesNotExist:
                 raise APIError(
@@ -67,6 +77,12 @@ def get_user(request):
 
 
 class LinkController(Controller[PydanticSerializer]):
+    responses = (
+        ResponseSpec(
+            Controller.error_model,
+            status_code=HTTPStatus.BAD_REQUEST,
+        ),
+    )
 
     def get(self) -> LinkListModel:
         latest = ShortUrl.objects.all()[:10]
@@ -88,3 +104,17 @@ class LinkController(Controller[PydanticSerializer]):
                     logger.debug("Unable to save link due to DB integrity error", err)
                     # short url with this name already exists, try again with another name
                     continue
+
+    @override
+    def handle_error(
+            self,
+            endpoint: Endpoint,
+            controller: Controller[PydanticSerializer],
+            exc: Exception,
+    ) -> HttpResponse:
+        if isinstance(exc, pydantic.ValidationError):
+            return self.to_response(
+                self.format_error('Validation error: {}'.format(exc.errors()[0]['msg'])),
+                status_code=HTTPStatus.BAD_REQUEST,
+            )
+        return super().handle_error(endpoint, controller, exc)
