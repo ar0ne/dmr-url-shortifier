@@ -13,9 +13,20 @@ from dmr.plugins.pydantic import PydanticSerializer
 from pydantic import Field, HttpUrl
 
 from .models import ShortUrl
-from .services import shortify, get_and_increment_url
+from .services import shortify_url, get_and_increment_url, get_latest_links
 
 logger = logging.getLogger(__name__)
+
+__all__ = [
+    "DetailLinkController",
+    "LinkController",
+]
+
+
+def get_user(request):
+    if request.user.is_authenticated:
+        return request.user
+    return None
 
 
 class LinkModel(pydantic.BaseModel):
@@ -54,6 +65,7 @@ class DetailLinkController(Controller[PydanticSerializer]):
     def get(self) -> LinkModel:
         key = self.kwargs['key']
         try:
+            # 'hits' could be not "the latest", need to write Raw SQL to leverage RETURNING
             url = get_and_increment_url(key)
             return LinkModel.from_model(url)
         except ShortUrl.DoesNotExist:
@@ -66,12 +78,6 @@ class DetailLinkController(Controller[PydanticSerializer]):
             )
 
 
-def get_user(request):
-    if request.user.is_authenticated:
-        return request.user
-    return None
-
-
 class LinkController(Controller[PydanticSerializer]):
     responses = (
         ResponseSpec(
@@ -81,16 +87,14 @@ class LinkController(Controller[PydanticSerializer]):
     )
 
     def get(self) -> LinkListModel:
-        latest = ShortUrl.objects.all()[:10]
-        return LinkListModel(data=map(LinkModel.from_model, latest))
+        return LinkListModel(data=map(LinkModel.from_model, get_latest_links()))
 
     def post(self, parsed_body: Body[LinkCreateModel]) -> LinkModel:
         while True:
-            key = shortify(parsed_body.target_url)
             with transaction.atomic():
                 try:
                     link = ShortUrl.objects.create(
-                        key=key,
+                        key=shortify_url(parsed_body.target_url),
                         target_url=parsed_body.target_url,
                         created_by=get_user(self.request),
                         hits=0

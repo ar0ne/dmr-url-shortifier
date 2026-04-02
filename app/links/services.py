@@ -2,19 +2,28 @@ import secrets
 import string
 
 from django.db import transaction
-from django.db.models import F
+from django.db.models import F, QuerySet
 
 from app.links.models import ShortUrl
 
+__all__ = [
+    "shortify_url",
+    "get_and_increment_url",
+    "get_latest_links",
+]
+
 CHARACTERS = string.ascii_letters + string.digits
+LATEST_SIZE = 10
 
 
-def shortify(_: str, size: int = 5) -> str:
+
+def shortify_url(_: str, size: int = 5) -> str:
     """
-    Create random string.
+    Just create random string.
     Instead, we could hash original URL.
     """
     return ''.join((secrets.choice(CHARACTERS) for _ in range(size)))
+
 
 def get_and_increment_url(key: str) -> ShortUrl:
     assert key, "Link key should be not empty"
@@ -23,3 +32,7 @@ def get_and_increment_url(key: str) -> ShortUrl:
         url.hits = F("hits") + 1
         url.save(update_fields=['hits'])
         return url
+
+
+def get_latest_links() -> QuerySet:
+    return ShortUrl.objects.all()[:LATEST_SIZE]
