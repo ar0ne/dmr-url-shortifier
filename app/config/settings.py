@@ -11,6 +11,10 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
 from pathlib import Path
+from typing import TypedDict
+from http import HTTPStatus
+from dmr import ResponseSpec
+from dmr.settings import Settings
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -38,11 +42,11 @@ DJANGO_APPS = [
 ]
 
 LOCAL_APPS = [
-    "links"
+    "app.links",
 ]
 
 THIRD_PARTY_APPS = [
-
+    "dmr",
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
@@ -57,7 +61,7 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
-ROOT_URLCONF = "config.urls"
+ROOT_URLCONF = "app.config.urls"
 
 TEMPLATES = [
     {
@@ -74,7 +78,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = "config.wsgi.application"
+WSGI_APPLICATION = "app.config.wsgi.application"
 
 
 # Database
@@ -128,3 +132,17 @@ STATIC_URL = "static/"
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+
+class Error(TypedDict):
+    detail: str
+
+
+DMR_SETTINGS = {
+    Settings.responses: [
+        ResponseSpec(
+            Error,
+            status_code=HTTPStatus.INTERNAL_SERVER_ERROR,
+        ),
+    ],
+}
