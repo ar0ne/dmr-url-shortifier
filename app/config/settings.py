@@ -14,6 +14,7 @@ from pathlib import Path
 from typing import TypedDict
 from http import HTTPStatus
 from dmr import ResponseSpec
+from dmr.openapi import OpenAPIConfig
 from dmr.settings import Settings
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -145,4 +146,9 @@ DMR_SETTINGS = {
             status_code=HTTPStatus.INTERNAL_SERVER_ERROR,
         ),
     ],
+    Settings.openapi_config: OpenAPIConfig(
+        title='URL Shortifier',
+        version='0.0.1',
+        openapi_version='3.2.0',
+    ),
 }
