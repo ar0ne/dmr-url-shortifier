@@ -5,7 +5,6 @@ from typing import override, Self
 
 import pydantic
 from django.db import transaction, IntegrityError
-from django.db.models import F
 from django.http import HttpResponse
 from dmr import Controller, Body, APIError, ResponseSpec
 from dmr.endpoint import Endpoint
@@ -14,13 +13,13 @@ from dmr.plugins.pydantic import PydanticSerializer
 from pydantic import Field, HttpUrl
 
 from .models import ShortUrl
-from .services import shortify
+from .services import shortify, get_and_increment_url
 
 logger = logging.getLogger(__name__)
 
 
 class LinkModel(pydantic.BaseModel):
-    name: str
+    key: str
     target_url: HttpUrl
     hits: int
     created_at: datetime
@@ -28,7 +27,7 @@ class LinkModel(pydantic.BaseModel):
     @classmethod
     def from_model(cls, obj: ShortUrl) -> Self:
         return cls(
-            name=obj.name,
+            key=obj.key,
             target_url=obj.target_url,
             hits=obj.hits,
             created_at=obj.created_at
@@ -53,21 +52,18 @@ class DetailLinkController(Controller[PydanticSerializer]):
 
     # TODO: 404 is not documented
     def get(self) -> LinkModel:
-        name = self.kwargs['name']
-        with transaction.atomic():
-            try:
-                url = ShortUrl.objects.select_for_update().get(name=name)
-                url.hits = F("hits") + 1
-                url.save(update_fields=['hits'])
-                return LinkModel.from_model(url)
-            except ShortUrl.DoesNotExist:
-                raise APIError(
-                    self.format_error(
-                        f"Unable to find link with {name=}",
-                        error_type=ErrorType.not_found
-                    ),
-                    status_code=HTTPStatus.NOT_FOUND
-                )
+        key = self.kwargs['key']
+        try:
+            url = get_and_increment_url(key)
+            return LinkModel.from_model(url)
+        except ShortUrl.DoesNotExist:
+            raise APIError(
+                self.format_error(
+                    f"Unable to find link with {key=}",
+                    error_type=ErrorType.not_found
+                ),
+                status_code=HTTPStatus.NOT_FOUND
+            )
 
 
 def get_user(request):
@@ -90,11 +86,11 @@ class LinkController(Controller[PydanticSerializer]):
 
     def post(self, parsed_body: Body[LinkCreateModel]) -> LinkModel:
         while True:
-            short_name = shortify(parsed_body.target_url)
+            key = shortify(parsed_body.target_url)
             with transaction.atomic():
                 try:
                     link = ShortUrl.objects.create(
-                        name=short_name,
+                        key=key,
                         target_url=parsed_body.target_url,
                         created_by=get_user(self.request),
                         hits=0
@@ -102,7 +98,7 @@ class LinkController(Controller[PydanticSerializer]):
                     return LinkModel.from_model(link)
                 except IntegrityError as err:
                     logger.debug("Unable to save link due to DB integrity error", err)
-                    # short url with this name already exists, try again with another name
+                    # url with this key already exists, auto retry with another key
                     continue
 
     @override

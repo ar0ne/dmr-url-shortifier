@@ -4,9 +4,9 @@ from django.db.models import DO_NOTHING
 from django.utils.translation import gettext_lazy as _
 
 class ShortUrl(models.Model):
-    name = models.CharField(
-        verbose_name=_("URL name"),
-        help_text=_("Unique name for shortified URL"),
+    key = models.CharField(
+        verbose_name=_("URL key"),
+        help_text=_("Unique key for shortified URL"),
         max_length=15, unique=True, db_index=True,
     )
     target_url = models.URLField(
@@ -28,5 +28,5 @@ class ShortUrl(models.Model):
 
         indexes = [
             models.Index(fields=["created_at"]),
-            models.Index(fields=["name"])
+            models.Index(fields=["key"])
         ]
