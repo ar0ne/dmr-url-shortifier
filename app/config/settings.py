@@ -10,9 +10,10 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
+from http import HTTPStatus
 from pathlib import Path
 from typing import TypedDict
-from http import HTTPStatus
+
 from dmr import ResponseSpec
 from dmr.openapi import OpenAPIConfig
 from dmr.settings import Settings

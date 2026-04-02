@@ -1,19 +1,19 @@
 import logging
 from datetime import datetime
 from http import HTTPStatus
-from typing import override, Self
+from typing import Self, override
 
 import pydantic
-from django.db import transaction, IntegrityError
+from django.db import IntegrityError, transaction
 from django.http import HttpResponse
-from dmr import Controller, Body, APIError, ResponseSpec
+from dmr import APIError, Body, Controller, ResponseSpec
 from dmr.endpoint import Endpoint
 from dmr.errors import ErrorType
 from dmr.plugins.pydantic import PydanticSerializer
 from pydantic import HttpUrl
 
 from .models import ShortUrl
-from .services import shortify_url, get_and_increment_url, get_latest_links
+from .services import get_and_increment_url, get_latest_links, shortify_url
 
 logger = logging.getLogger(__name__)
 
