@@ -1,2 +1,27 @@
+from django.contrib.auth import get_user_model
 from django.db import models
+from django.db.models import DO_NOTHING
+from django.utils.translation import gettext_lazy as _
 
+class ShortUrl(models.Model):
+    name = models.CharField(
+        verbose_name=_("URL name"),
+        help_text=_("Unique name for shortified URL"),
+        max_length=15, unique=True, db_index=True,
+    )
+    url = models.URLField(
+        verbose_name=_("Original URL"), blank=False
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    created_by = models.ForeignKey(get_user_model(), null=True, on_delete=DO_NOTHING)
+
+    class Meta:
+        verbose_name = "Short URL"
+        verbose_name_plural = "Short URLs"
+
+        ordering = ["-created_at"]
+
+        indexes = [
+            models.Index(fields=["created_at"]),
+            models.Index(fields=["name"])
+        ]
