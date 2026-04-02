@@ -10,7 +10,7 @@ from dmr import Controller, Body, APIError, ResponseSpec
 from dmr.endpoint import Endpoint
 from dmr.errors import ErrorType
 from dmr.plugins.pydantic import PydanticSerializer
-from pydantic import Field, HttpUrl
+from pydantic import HttpUrl
 
 from .models import ShortUrl
 from .services import shortify_url, get_and_increment_url, get_latest_links
@@ -50,7 +50,7 @@ class LinkListModel(pydantic.BaseModel):
 
 
 class LinkCreateModel(pydantic.BaseModel):
-    target_url: str = Field(..., min_length=3, max_length=200)
+    target_url: HttpUrl
 
 
 class DetailLinkController(Controller[PydanticSerializer]):
