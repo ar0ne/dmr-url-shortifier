@@ -27,7 +27,11 @@ def shortify_url(_: str, size: int = 5) -> str:
 def get_and_increment_url(key: str) -> ShortUrl:
     assert key, "Link key should be not empty"
     with transaction.atomic():
-        url = ShortUrl.objects.select_for_update().get(key=key)
+        url = (
+              ShortUrl.objects
+                .select_for_update(of=("self",), no_key=True)
+                .get(key=key)
+        )
         url.hits = F("hits") + 1
         url.save(update_fields=["hits"])
         return url
