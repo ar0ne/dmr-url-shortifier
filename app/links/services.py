@@ -29,6 +29,7 @@ def get_and_increment_url(key: str) -> ShortUrl:
     with transaction.atomic():
         url = (
               ShortUrl.objects
+                # no_key works only for PostgreSQL at the moment
                 .select_for_update(of=("self",), no_key=True)
                 .get(key=key)
         )
