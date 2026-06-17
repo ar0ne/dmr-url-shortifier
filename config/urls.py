@@ -3,7 +3,7 @@ from django.urls import include, path
 from dmr.openapi import build_schema
 from dmr.openapi.views import OpenAPIJsonView, SwaggerView
 
-from apps.links.routes import router as links_router_v1
+from apps.links.api.routes import router as links_router_v1
 
 schema = build_schema(links_router_v1)
 
