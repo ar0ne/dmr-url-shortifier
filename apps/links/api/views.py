@@ -16,8 +16,8 @@ from apps.links.infrastructure.use_cases import create_short_url
 logger = logging.getLogger(__name__)
 
 # __all__ = [
-    # "DetailLinkController",
-    # "LinkController",
+# "DetailLinkController",
+# "LinkController",
 # ]
 
 
@@ -25,6 +25,7 @@ def get_user_id(request) -> uuid.UUID | None:
     if request.user.is_authenticated:
         return request.user.id
     return None
+
 
 #
 # class DetailLinkController(Controller[PydanticSerializer]):
@@ -65,11 +66,9 @@ class LinkController(Controller[PydanticSerializer]):
     def post(self, parsed_body: Body[CreateShortURLScheme]) -> ShortedURLScheme:
         entity = create_short_url(
             original_url=str(parsed_body.target_url),
-            created_by=get_user_id(self.request)
+            created_by=get_user_id(self.request),
         )
         return ShortURLDtoMapper.map(entity)
-
-
 
     @override
     def handle_error(

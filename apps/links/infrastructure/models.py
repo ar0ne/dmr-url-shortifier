@@ -57,8 +57,8 @@ class ShortURLModel(models.Model):
             models.Index(
                 name="links_shorturl_created_by_idx",
                 fields=("created_by_id",),
-                condition=models.Q(created_by_id__isnull=False)
-            )
+                condition=models.Q(created_by_id__isnull=False),
+            ),
         ]
 
     def __str__(self) -> str:

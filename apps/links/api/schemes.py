@@ -4,7 +4,7 @@ from typing import Self
 import pydantic
 from pydantic import HttpUrl
 
-from apps.links.domain.entities import ShortedURLEntity
+from apps.links.domain.entities import ShortURLEntity
 
 
 class ShortedURLScheme(pydantic.BaseModel):
@@ -29,4 +29,3 @@ class ShortedURLListScheme(pydantic.BaseModel):
 
 class CreateShortURLScheme(pydantic.BaseModel):
     target_url: HttpUrl
-
