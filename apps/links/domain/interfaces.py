@@ -6,15 +6,15 @@ from typing import Protocol
 from apps.links.domain.entities import ShortURLEntity
 
 
-class IURLShortifyService(Protocol):
+class IShortifyURLService(Protocol):
     _max_length: int
 
-    def create_short_url(
+    def shortify(
         self, /, *, original_url: str, created_by: uuid.UUID | None = None
     ) -> ShortURLEntity: ...
 
 
-class IURLShortifyRepository(Protocol):
+class IShortifyURLRepository(Protocol):
     def save(self, entity: ShortURLEntity) -> ShortURLEntity: ...
 
     def get_by_code(self, short_code: str) -> ShortURLEntity: ...

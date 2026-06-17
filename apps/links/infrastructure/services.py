@@ -1,34 +1,30 @@
+import logging
 import secrets
 import string
 import uuid
 
-from django.db import transaction
-from django.db.models import F, QuerySet
-
 from apps.links.domain.entities import ShortURLEntity
 from apps.links.domain.exceptions import ShortURLCollisionError
-from apps.links.infrastructure.models import ShortURLModel
 
-# __all__ = [
-#     "shortify_url",
-#     "get_and_increment_url",
-#     "get_latest_links",
-# ]
+logger = logging.getLogger(__name__)
+
+__all__ = [
+    "SimpleUrlShortifierService",
+]
 
 from apps.links.domain.interfaces import (
-    IURLShortifyService,
-    IURLShortifyRepository,
+    IShortifyURLService,
+    IShortifyURLRepository,
     ITransactionContext,
 )
 
 
-class SimpleUrlShortifierService(IURLShortifyService):
+class SimpleUrlShortifierService(IShortifyURLService):
     CHARACTERS = string.ascii_letters + string.digits
-    LATEST_SIZE = 10
 
     def __init__(
         self,
-        repository: IURLShortifyRepository,
+        repository: IShortifyURLRepository,
         trx_context_manager: ITransactionContext,
         max_length: int,
     ) -> None:
@@ -36,9 +32,12 @@ class SimpleUrlShortifierService(IURLShortifyService):
         self._max_length = max_length
         self._trx_atomic = trx_context_manager
 
-    def create_short_url(
+    def shortify(
         self, /, *, original_url: str, created_by: uuid.UUID | None = None
     ) -> ShortURLEntity:
+        """
+        Shortifies original URL and creates new record in DB.
+        """
         while True:
             entity = ShortURLEntity(
                 original_url=original_url,
@@ -49,8 +48,10 @@ class SimpleUrlShortifierService(IURLShortifyService):
             with self._trx_atomic():
                 try:
                     return self._repository.save(entity)
-                except ShortURLCollisionError:
+                except ShortURLCollisionError as exc:
+                    logger.info("Short URL collision", exc)
                     continue
+        assert False, "unreachable"
 
     def _random_string(self) -> str:
         """

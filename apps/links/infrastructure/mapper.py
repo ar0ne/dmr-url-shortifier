@@ -10,6 +10,7 @@ class ShortURLModelMapper:
             short_code=model.key,
             views_count=model.hits,
             create_by_id=model.created_by,
+            created_at=model.created_at,
         )
 
     @staticmethod
@@ -18,5 +19,6 @@ class ShortURLModelMapper:
             key=entity.short_code,
             target_url=entity.original_url,
             hits=entity.views_count,
+            created_at=entity.created_at,
             created_by=entity.create_by_id,
         )

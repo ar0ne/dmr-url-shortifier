@@ -1,26 +1,16 @@
+import uuid
 from datetime import datetime
-from typing import Self
 
 import pydantic
 from pydantic import HttpUrl
 
-from apps.links.domain.entities import ShortURLEntity
-
 
 class ShortedURLScheme(pydantic.BaseModel):
-    key: str
-    target_url: HttpUrl
-    hits: int
-    created_at: datetime
-
-    # @classmethod
-    # def from_model(cls, obj: ShortedUrlEntity) -> Self:
-    #     return cls(
-    #         key=obj.key,
-    #         target_url=obj.target_url,
-    #         hits=obj.hits,
-    #         created_at=obj.created_at,
-    #     )
+    short_code: str
+    target_url: str
+    views: int
+    created_at: datetime | None
+    created_by: uuid.UUID | None = None
 
 
 class ShortedURLListScheme(pydantic.BaseModel):

@@ -11,5 +11,5 @@ class ShortURLEntity:
     original_url: str
     short_code: str
     views_count: int
-    created_at: datetime | None
-    create_by_id: uuid.UUID | None
+    created_at: datetime | None = None
+    create_by_id: uuid.UUID | None = None
