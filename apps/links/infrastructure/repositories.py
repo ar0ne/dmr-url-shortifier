@@ -1,4 +1,5 @@
 from django.db import IntegrityError
+from django.db.models import F
 
 from apps.links.domain.entities import ShortURLEntity
 from apps.links.domain.exceptions import ShortURLCollisionError, ShortURLNotFound
@@ -18,6 +19,7 @@ class DjangoShortURLRepository(IShortifyURLRepository):
                 target_url=entity.original_url,
                 hits=entity.views_count,
                 created_by=entity.create_by_id,
+                created_at=entity.created_at,
             )
             return self._mapper.from_model(model)
         except IntegrityError as exc:
@@ -29,3 +31,14 @@ class DjangoShortURLRepository(IShortifyURLRepository):
             return self._mapper.from_model(model)
         except ShortURLModel.DoesNotExist as exc:
             raise ShortURLNotFound(exc)
+
+    def increase_views(self, short_code: str) -> ShortURLEntity:
+        try:
+            url = ShortURLModel.objects.select_for_update(
+                of=("self",), no_key=True
+            ).get(key=short_code)
+            url.hits = F("hits") + 1
+            url.save(update_fields=["hits"])
+        except ShortURLModel.DoesNotExist as exc:
+            raise ShortURLNotFound(exc)
+        return self._mapper.from_model(url)

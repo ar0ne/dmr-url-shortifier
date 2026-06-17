@@ -5,20 +5,25 @@ from typing import override
 
 import pydantic
 from django.http import HttpResponse
-from dmr import Body, Controller, ResponseSpec
+from dmr import Body, Controller, ResponseSpec, APIError
 from dmr.endpoint import Endpoint
+from dmr.errors import ErrorType
 from dmr.plugins.pydantic import PydanticSerializer
 
 from apps.links.api.mappers import ShortURLDtoMapper
 from apps.links.api.schemes import CreateShortURLScheme, ShortedURLScheme
-from apps.links.infrastructure.use_cases import create_short_url
+from apps.links.domain.exceptions import ShortURLNotFound
+from apps.links.infrastructure.use_cases import (
+    create_short_url,
+    get_by_code_and_increment_views,
+)
 
 logger = logging.getLogger(__name__)
 
-# __all__ = [
-# "DetailLinkController",
-# "LinkController",
-# ]
+__all__ = [
+    "LinkDetailsController",
+    "CreateListLinkController",
+]
 
 
 def get_user_id(request) -> uuid.UUID | None:
@@ -27,32 +32,31 @@ def get_user_id(request) -> uuid.UUID | None:
     return None
 
 
-#
-# class DetailLinkController(Controller[PydanticSerializer]):
-#     responses = (
-#         ResponseSpec(
-#             Controller.error_model,
-#             status_code=HTTPStatus.NOT_FOUND,
-#         ),
-#     )
-#
-#     # TODO: 404 is not documented
-#     def get(self) -> LinkModel:
-#         key = self.kwargs["key"]
-#         try:
-#             # 'hits' could be not "the latest", need to write Raw SQL to leverage RETURNING
-#             url = get_and_increment_url(key)
-#             return LinkModel.from_model(url)
-#         except ShortUrl.DoesNotExist:
-#             raise APIError(
-#                 self.format_error(
-#                     f"Unable to find link with {key=}", error_type=ErrorType.not_found
-#                 ),
-#                 status_code=HTTPStatus.NOT_FOUND,
-#             )
+class LinkDetailsController(Controller[PydanticSerializer]):
+    responses = (
+        ResponseSpec(
+            Controller.error_model,
+            status_code=HTTPStatus.NOT_FOUND,
+        ),
+    )
+
+    # TODO: 404 is not documented
+    def get(self) -> ShortedURLScheme:
+        short_code = self.kwargs["short_code"]
+        try:
+            entity = get_by_code_and_increment_views(short_code)
+            return ShortURLDtoMapper.map(entity)
+        except ShortURLNotFound as exc:
+            raise APIError(
+                self.format_error(
+                    f"Unable to find URL with {short_code=}",
+                    error_type=ErrorType.not_found,
+                ),
+                status_code=HTTPStatus.NOT_FOUND,
+            )
 
 
-class LinkController(Controller[PydanticSerializer]):
+class CreateListLinkController(Controller[PydanticSerializer]):
     responses = (
         ResponseSpec(
             Controller.error_model,

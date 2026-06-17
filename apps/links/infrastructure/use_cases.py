@@ -11,7 +11,7 @@ from apps.links.infrastructure.services import SimpleUrlShortifierService
 MAX_SHORT_CODE_LENGTH = 25  # TODO: from configs
 
 
-def get_create_url_shortifier_service() -> SimpleUrlShortifierService:
+def get_url_shortifier_service() -> SimpleUrlShortifierService:
     return SimpleUrlShortifierService(
         repository=DjangoShortURLRepository(mapper=ShortURLModelMapper()),
         max_length=MAX_SHORT_CODE_LENGTH,
@@ -22,5 +22,10 @@ def get_create_url_shortifier_service() -> SimpleUrlShortifierService:
 def create_short_url(
     original_url: str, created_by: uuid.UUID | None = None
 ) -> ShortURLEntity:
-    service = get_create_url_shortifier_service()
+    service = get_url_shortifier_service()
     return service.shortify(original_url=original_url, created_by=created_by)
+
+
+def get_by_code_and_increment_views(short_code: str) -> ShortURLEntity:
+    service = get_url_shortifier_service()
+    return service.increment_views(short_code)

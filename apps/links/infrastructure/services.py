@@ -53,6 +53,10 @@ class SimpleUrlShortifierService(IShortifyURLService):
                     continue
         assert False, "unreachable"
 
+    def increment_views(self, short_code: str) -> ShortURLEntity:
+        with self._trx_atomic():
+            return self._repository.increase_views(short_code)
+
     def _random_string(self) -> str:
         """
         Just creates random string. Instead, we could hash original URL.
@@ -62,19 +66,5 @@ class SimpleUrlShortifierService(IShortifyURLService):
         )
 
 
-# def get_and_increment_url(key: str) -> ShortUrlModel:
-#     assert key, "Link key should be not empty"
-#     with transaction.atomic():
-#         url = (
-#               ShortUrlModel.objects
-#                 # no_key works only for PostgreSQL at the moment
-#                 .select_for_update(of=("self",), no_key=True)
-#                 .get(key=key)
-#         )
-#         url.hits = F("hits") + 1
-#         url.save(update_fields=["hits"])
-#         return url
-#
-#
 # def get_latest_links() -> QuerySet:
 #     return ShortUrlModel.objects.all()[:LATEST_SIZE]
