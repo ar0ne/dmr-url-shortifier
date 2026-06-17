@@ -44,7 +44,7 @@ DJANGO_APPS = [
 ]
 
 LOCAL_APPS = [
-    "app.links",
+    "apps.links",
 ]
 
 THIRD_PARTY_APPS = [
@@ -63,7 +63,7 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
-ROOT_URLCONF = "app.config.urls"
+ROOT_URLCONF = "config.urls"
 
 TEMPLATES = [
     {
@@ -80,7 +80,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = "app.config.wsgi.application"
+WSGI_APPLICATION = "config.wsgi.application"
 
 
 # Database

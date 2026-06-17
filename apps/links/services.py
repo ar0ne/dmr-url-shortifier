@@ -4,7 +4,7 @@ import string
 from django.db import transaction
 from django.db.models import F, QuerySet
 
-from app.links.models import ShortUrl
+from apps.links.models import ShortUrl
 
 __all__ = [
     "shortify_url",
