@@ -11,11 +11,16 @@ from dmr.errors import ErrorType
 from dmr.plugins.pydantic import PydanticSerializer
 
 from apps.links.api.mappers import ShortURLDtoMapper
-from apps.links.api.schemes import CreateShortURLScheme, ShortedURLScheme
+from apps.links.api.schemes import (
+    CreateShortURLScheme,
+    ShortedURLScheme,
+    ShortedURLListScheme,
+)
 from apps.links.domain.exceptions import ShortURLNotFound
 from apps.links.infrastructure.use_cases import (
     create_short_url,
     get_by_code_and_increment_views,
+    get_latest_links,
 )
 
 logger = logging.getLogger(__name__)
@@ -64,8 +69,10 @@ class CreateListLinkController(Controller[PydanticSerializer]):
         ),
     )
 
-    # def get(self) -> LinkListModel:
-    #     return LinkListModel(data=map(LinkModel.from_model, get_latest_links()))
+    def get(self) -> ShortedURLListScheme:
+        return ShortedURLListScheme(
+            results=list(map(ShortURLDtoMapper.map, get_latest_links()))
+        )
 
     def post(self, parsed_body: Body[CreateShortURLScheme]) -> ShortedURLScheme:
         entity = create_short_url(

@@ -42,3 +42,7 @@ class DjangoShortURLRepository(IShortifyURLRepository):
         except ShortURLModel.DoesNotExist as exc:
             raise ShortURLNotFound(exc)
         return self._mapper.from_model(url)
+
+    def get_latest(self, size: int) -> list[ShortURLEntity]:
+        links = ShortURLModel.objects.all()[:size]
+        return [self._mapper.from_model(model) for model in links]

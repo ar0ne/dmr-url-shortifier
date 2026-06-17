@@ -5,14 +5,16 @@ from django.db import transaction
 from apps.links.domain.entities import ShortURLEntity
 from apps.links.infrastructure.mapper import ShortURLModelMapper
 from apps.links.infrastructure.repositories import DjangoShortURLRepository
-from apps.links.infrastructure.services import SimpleUrlShortifierService
+from apps.links.infrastructure.services import URLShortifierService
 
 
-MAX_SHORT_CODE_LENGTH = 25  # TODO: from configs
+# TODO: from configs
+MAX_SHORT_CODE_LENGTH = 25
+LATEST_LINKS_SIZE = 10
 
 
-def get_url_shortifier_service() -> SimpleUrlShortifierService:
-    return SimpleUrlShortifierService(
+def get_url_shortifier_service() -> URLShortifierService:
+    return URLShortifierService(
         repository=DjangoShortURLRepository(mapper=ShortURLModelMapper()),
         max_length=MAX_SHORT_CODE_LENGTH,
         trx_context_manager=transaction.atomic,
@@ -29,3 +31,8 @@ def create_short_url(
 def get_by_code_and_increment_views(short_code: str) -> ShortURLEntity:
     service = get_url_shortifier_service()
     return service.increment_views(short_code)
+
+
+def get_latest_links(size: int = LATEST_LINKS_SIZE) -> list[ShortURLEntity]:
+    service = get_url_shortifier_service()
+    return service.get_latest(size)

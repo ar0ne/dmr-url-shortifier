@@ -9,7 +9,7 @@ from apps.links.domain.exceptions import ShortURLCollisionError
 logger = logging.getLogger(__name__)
 
 __all__ = [
-    "SimpleUrlShortifierService",
+    "URLShortifierService",
 ]
 
 from apps.links.domain.interfaces import (
@@ -19,7 +19,7 @@ from apps.links.domain.interfaces import (
 )
 
 
-class SimpleUrlShortifierService(IShortifyURLService):
+class URLShortifierService(IShortifyURLService):
     CHARACTERS = string.ascii_letters + string.digits
 
     def __init__(
@@ -57,6 +57,9 @@ class SimpleUrlShortifierService(IShortifyURLService):
         with self._trx_atomic():
             return self._repository.increase_views(short_code)
 
+    def get_latest(self, size: int = 10) -> list[ShortURLEntity]:
+        return self._repository.get_latest(size)
+
     def _random_string(self) -> str:
         """
         Just creates random string. Instead, we could hash original URL.
@@ -64,7 +67,3 @@ class SimpleUrlShortifierService(IShortifyURLService):
         return "".join(
             (secrets.choice(self.CHARACTERS) for _ in range(self._max_length))
         )
-
-
-# def get_latest_links() -> QuerySet:
-#     return ShortUrlModel.objects.all()[:LATEST_SIZE]

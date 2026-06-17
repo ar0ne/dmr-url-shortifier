@@ -14,7 +14,7 @@ class ShortedURLScheme(pydantic.BaseModel):
 
 
 class ShortedURLListScheme(pydantic.BaseModel):
-    data: list[ShortedURLScheme]
+    results: list[ShortedURLScheme]
 
 
 class CreateShortURLScheme(pydantic.BaseModel):

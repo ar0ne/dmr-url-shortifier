@@ -21,6 +21,8 @@ class IShortifyURLRepository(Protocol):
 
     def increase_views(self, short_code) -> ShortURLEntity: ...
 
+    def get_latest(self, size: int) -> list[ShortURLEntity]: ...
+
 
 class ITransactionContext(Protocol):
     @abstractmethod
