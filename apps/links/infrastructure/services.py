@@ -2,6 +2,8 @@ import logging
 import secrets
 import string
 import uuid
+from dataclasses import dataclass
+from typing import final
 
 from apps.links.domain.entities import ShortURLEntity
 from apps.links.domain.exceptions import ShortURLCollisionError
@@ -10,27 +12,23 @@ logger = logging.getLogger(__name__)
 
 __all__ = [
     "URLShortifierService",
+    "RandomStringGenerator",
 ]
 
 from apps.links.domain.interfaces import (
     IShortifyURLService,
     IShortifyURLRepository,
     ITransactionContext,
+    IStringGenerator,
 )
 
 
+@final
+@dataclass(frozen=True, slots=True, kw_only=True)
 class URLShortifierService(IShortifyURLService):
-    CHARACTERS = string.ascii_letters + string.digits
-
-    def __init__(
-        self,
-        repository: IShortifyURLRepository,
-        trx_context_manager: ITransactionContext,
-        max_length: int,
-    ) -> None:
-        self._repository = repository
-        self._max_length = max_length
-        self._trx_atomic = trx_context_manager
+    _repository: IShortifyURLRepository
+    _trx_atomic: ITransactionContext
+    _generator: IStringGenerator
 
     def shortify(
         self, /, *, original_url: str, created_by: uuid.UUID | None = None
@@ -41,7 +39,7 @@ class URLShortifierService(IShortifyURLService):
         while True:
             entity = ShortURLEntity(
                 original_url=original_url,
-                short_code=self._random_string(),
+                short_code=self._generator(seed=original_url),
                 views_count=0,
                 create_by_id=created_by,
             )
@@ -60,10 +58,19 @@ class URLShortifierService(IShortifyURLService):
     def get_latest(self, size: int = 10) -> list[ShortURLEntity]:
         return self._repository.get_latest(size)
 
-    def _random_string(self) -> str:
-        """
-        Just creates random string. Instead, we could hash original URL.
-        """
+
+@final
+@dataclass(frozen=True, slots=True, kw_only=True)
+class RandomStringGenerator:
+    CHARACTERS = string.ascii_letters + string.digits
+
+    _max_length: int
+
+    """
+    Just creates random string. Instead, we could hash original URL.
+    """
+
+    def __call__(self, /, *, seed: str) -> str:
         return "".join(
             (secrets.choice(self.CHARACTERS) for _ in range(self._max_length))
         )

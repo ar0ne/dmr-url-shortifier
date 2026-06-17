@@ -29,3 +29,7 @@ class ITransactionContext(Protocol):
     def __call__(self) -> AbstractContextManager[None]:
         """Return a context manager that wraps code in an atomic transaction."""
         ...
+
+
+class IStringGenerator(Protocol):
+    def __call__(self, /, *, seed: str) -> str: ...

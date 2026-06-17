@@ -1,24 +1,10 @@
 import uuid
 
-from django.db import transaction
-
+from apps.links.di import get_url_shortifier_service
 from apps.links.domain.entities import ShortURLEntity
-from apps.links.infrastructure.mapper import ShortURLModelMapper
-from apps.links.infrastructure.repositories import DjangoShortURLRepository
-from apps.links.infrastructure.services import URLShortifierService
-
 
 # TODO: from configs
-MAX_SHORT_CODE_LENGTH = 25
 LATEST_LINKS_SIZE = 10
-
-
-def get_url_shortifier_service() -> URLShortifierService:
-    return URLShortifierService(
-        repository=DjangoShortURLRepository(mapper=ShortURLModelMapper()),
-        max_length=MAX_SHORT_CODE_LENGTH,
-        trx_context_manager=transaction.atomic,
-    )
 
 
 def create_short_url(

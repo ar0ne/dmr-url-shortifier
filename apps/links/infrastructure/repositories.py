@@ -1,3 +1,6 @@
+from dataclasses import dataclass
+from typing import final
+
 from django.db import IntegrityError
 from django.db.models import F
 
@@ -8,9 +11,10 @@ from apps.links.infrastructure.mapper import ShortURLModelMapper
 from apps.links.infrastructure.models import ShortURLModel
 
 
+@final
+@dataclass(slots=True, kw_only=True, frozen=True)
 class DjangoShortURLRepository(IShortifyURLRepository):
-    def __init__(self, mapper: ShortURLModelMapper) -> None:
-        self._mapper = mapper
+    _mapper: ShortURLModelMapper
 
     def save(self, entity: ShortURLEntity) -> ShortURLEntity:
         try:

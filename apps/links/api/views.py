@@ -26,8 +26,8 @@ from apps.links.infrastructure.use_cases import (
 logger = logging.getLogger(__name__)
 
 __all__ = [
-    "LinkDetailsController",
     "CreateListLinkController",
+    "LinkDetailsController",
 ]
 
 
