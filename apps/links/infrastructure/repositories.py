@@ -38,9 +38,8 @@ class DjangoShortURLRepository(IShortifyURLRepository):
 
     def increase_views(self, short_code: str) -> ShortURLEntity:
         try:
-            url = ShortURLModel.objects.select_for_update(
-                of=("self",), no_key=True
-            ).get(key=short_code)
+            # no need to lock the row, just update hits on DB level
+            url = ShortURLModel.objects.get(key=short_code)
             url.hits = F("hits") + 1
             url.save(update_fields=["hits"])
         except ShortURLModel.DoesNotExist as exc:
