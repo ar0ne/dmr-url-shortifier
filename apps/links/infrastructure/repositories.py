@@ -42,6 +42,8 @@ class DjangoShortURLRepository(IShortifyURLRepository):
             url = ShortURLModel.objects.get(key=short_code)
             url.hits = F("hits") + 1
             url.save(update_fields=["hits"])
+            # fetch updated value. Another approach could be using raw query with RETURNING *
+            url.refresh_from_db(fields=["hits"])
         except ShortURLModel.DoesNotExist as exc:
             raise ShortURLNotFound(exc)
         return self._mapper.from_model(url)
